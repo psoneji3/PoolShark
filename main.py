@@ -25,8 +25,7 @@ def get_ip_address(ser):
                     break
     except serial.SerialException as e:
         print(f"Serial exception: {e}")
-    finally:
-        ser.close()
+        
     return ip_address
 
 def fetch_image(ip_address):
@@ -141,7 +140,7 @@ def cvstuff(image):
     # Annotate lines and calculate angle
     if pocket_centers:
         # white_center = white_centers[0]
-        white_center = (image.shape[1] // 2, image.shape[0])
+        white_center = ((image.shape[1] // 2) + 40, image.shape[0])
         pocket_center = pocket_centers[0]
 
         cv2.line(annotated_image, (int(white_center[0]), int(white_center[1])),
@@ -165,7 +164,7 @@ def cvstuff(image):
         
         cv2.imwrite('esp32_ann_image.jpg', annotated_image)
     else: 
-        angle_deg = 10
+        angle_deg = 0
         print(f"White ball or pocket not detected")
     
     if os.path.exists(image_path):
@@ -174,8 +173,9 @@ def cvstuff(image):
     return round(angle_deg)
 
 def main():
-    serial_port = "COM11"
+    serial_port = "COM13"
     ser = serial.Serial(serial_port, baudrate=115200, timeout=5)
+    ser.flush()
     ip_address = get_ip_address(ser)    
     image_data = fetch_image(ip_address)
     
@@ -190,13 +190,12 @@ def main():
     img_rgb = cv2.imread('esp32_cam_image.jpg')
         
     degmove = cvstuff(img_rgb)
-    degmove = max(min(degmove, 20), -20)
-    print(degmove)
+    degmove = max(min(degmove, 25), -25)    
     
-    # message = f"{degmove}\n"
-    # ser.write(message.encode())
+    message = f"{degmove}\n"
+    ser.write(message.encode())
     
-    time.sleep(1)
-
+    time.sleep(2)
+    
 if __name__ == "__main__":
     main()
