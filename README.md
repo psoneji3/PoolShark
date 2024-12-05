@@ -5,3 +5,6 @@
 - images.ipynb: Jupyter notebook to play around with object detection and angle calculations
 - main.c: main code for the STM32 that handles all of the communication
 - main.py: python code for the laptop that handles communication with the stm32, pulls images from the esp web server, and calcualtes angle with object detection
+
+  ## Video Demo
+  https://youtu.be/VO6anPO-EfE
