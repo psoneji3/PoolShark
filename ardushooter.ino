@@ -9,7 +9,7 @@
 #define R_PIN     12      // Arduino pin connected to Right Limit
 #define L_PIN     13     // Arduino pin connected to Left Limit
 
-float stepsPerDegree = 0;  // Steps per degree, calculated during homing
+float stepsPerDegree = 3.8;  // Steps per degree, calculated during homing
 float currentAngle = 0;    // Current angle position of the rail
 
 SoftwareSerial stmSerial(2, 3); // RX, TX
@@ -48,12 +48,12 @@ void stepShoot(boolean dir, int steps)
 
 void homeAndCenterStepper() {
   digitalWrite(EN, LOW);  
-  uint16_t stepCount = 0;
+  // uint16_t stepCount = 0;
 
-  while (digitalRead(L_PIN) == HIGH) {  
-    stepRail(false, 1);  
-    stepCount += 1;
-  }
+  // while (digitalRead(L_PIN) == HIGH) {  
+  //   stepRail(false, 1);  
+  //   stepCount += 1;
+  // }
 
   uint16_t totalSteps = 0;
   while (digitalRead(R_PIN) == HIGH) {  
@@ -61,9 +61,9 @@ void homeAndCenterStepper() {
     totalSteps += 1;
   }
 
-  uint16_t stepsToCenter = totalSteps / 2;
+  // uint16_t stepsToCenter = totalSteps / 2;
+  uint16_t stepsToCenter = 171;
   stepRail(false, stepsToCenter); 
-  stepsPerDegree = totalSteps / 50.0; 
   currentAngle = 0;
   digitalWrite(EN, HIGH);  
 }
@@ -71,7 +71,7 @@ void homeAndCenterStepper() {
 void moveToAngle(float angle) {
   float stepsNeeded = (angle - currentAngle) * stepsPerDegree;
   int steps = abs(stepsNeeded);
-  boolean dir = stepsNeeded > 0 ? false : true;  
+  boolean dir = stepsNeeded < 0 ? false : true;  
   digitalWrite(EN, LOW);  
   stepRail(dir, steps);
   digitalWrite(EN, HIGH);  
@@ -94,7 +94,7 @@ void setup() {
   digitalWrite(EN, HIGH);
   pinMode(R_PIN, INPUT_PULLUP);  
   pinMode(L_PIN, INPUT_PULLUP);
-  Serial.begin(115200);
+  Serial.begin(9600);
   stmSerial.begin(115200);
 }
 
@@ -110,7 +110,7 @@ void loop() {
     else if (input.equalsIgnoreCase("S")) {
       stmSerial.flush();
       digitalWrite(EN, LOW);  
-      stepShoot(false, 300); 
+      stepShoot(false, 150); 
       digitalWrite(EN, HIGH);  
     }
     else {

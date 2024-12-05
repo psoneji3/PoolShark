@@ -180,12 +180,12 @@ void getAndSendIP() {
 
 int getAngleFromPC(void)
 {
-  char rx_buffer[50];  // Buffer to store received data
+  char rx_buffer[100];  // Buffer to store received data
   uint8_t index = 0;
   uint8_t rx_byte;
   int angle = 0;
   uint32_t start_time = HAL_GetTick();
-  uint32_t timeout = 20000;  // 20 seconds timeout
+  uint32_t timeout = 10000;  // 10 seconds timeout
 
   // Receive data until newline or timeout
   while ((HAL_GetTick() - start_time) < timeout)
@@ -194,10 +194,21 @@ int getAngleFromPC(void)
     {
       if (rx_byte == '\r' || rx_byte == '\n')
       {
-        rx_buffer[index] = '\0';  // Null-terminate the string
+        if (index > 0) // Only process if we have received some data
+        {
+          rx_buffer[index] = '\0';  // Null-terminate the string
 
-        // Parse the angle
-        angle = atoi(rx_buffer);
+          // Parse the angle
+          angle = atoi(rx_buffer);
+
+          // Break out of the loop since we have received the angle
+          return angle;
+        }
+        else
+        {
+          // Ignore empty lines
+          continue;
+        }
       }
       else
       {
@@ -220,10 +231,12 @@ int getAngleFromPC(void)
   }
 
   // Timeout occurred
-  char *timeout_msg = "Timeout occurred. Using default angle 0.\r\n";
+  char *timeout_msg = "Timeout occurred. Using default angle 1.\r\n";
   HAL_UART_Transmit(&huart2, (uint8_t *)timeout_msg, strlen(timeout_msg), HAL_MAX_DELAY);
-  return 0;  // Default angle
+  return 1;  // Default angle
 }
+
+
 
 
 /* USER CODE END 0 */
@@ -280,14 +293,13 @@ int main(void)
 		  HAL_Delay(500);
 		  char commandh[] = "H\n";
 		  HAL_UART_Transmit(&huart3, (uint8_t *)commandh, sizeof(commandh) - 1, HAL_MAX_DELAY);
-		  HAL_Delay(10000);
+		  HAL_Delay(6000);
 
 		  // GET & SEND IP TO COMPUTER
 		  getAndSendIP();
 
 		  // RECIEVE ANGLE
 		  int angle = getAngleFromPC();
-		  int angle = -10;
 
 		  // SEND ANGLE
 		  char angle_str[12];
